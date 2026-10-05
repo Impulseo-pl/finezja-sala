@@ -90,7 +90,7 @@ def head(p, path, title, desc, ld=None, preload=None, cls=''):
 <link rel="icon" href="{p}favicon.svg" type="image/svg+xml">
 <script>document.documentElement.classList.add('js');try{{if(!sessionStorage.getItem('fz_intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){{document.documentElement.classList.add('intro');sessionStorage.setItem('fz_intro','1')}}}}catch(e){{}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
 {pre}
 <link rel="stylesheet" href="{p}assets/styles.css">
 {ldh}
@@ -205,15 +205,15 @@ def home():
     p = ''
     occ = [
         ('wesele/', 'dek-roze', 'Wesele', 'Od 60 do 160 gości, jedno wesele dziennie, menu z własnej kuchni i koordynator od podpisania umowy do ostatniego tańca.'),
-        ('przyjecia/#osiemnastka', 'osiemnastka', 'Osiemnastka i urodziny', 'Sala na wyłączność, parkiet, DJ, tort z fontannami iskier. Roczek, 18-tka, 30, 40, 50, 60 i 70 lat.'),
+        ('przyjecia/#osiemnastka', 'urodziny-scianka', 'Osiemnastka i urodziny', 'Sala na wyłączność, parkiet, DJ, tort z fontannami iskier. Roczek, 18-tka, 30, 40, 50, 60 i 70 lat.'),
         ('przyjecia/#komunia', 'chrzest-neon', 'Komunia i chrzciny', 'Rodzinne przyjęcie w jasnej sali, menu dla dorosłych i dzieci, dekoracje dopasowane do uroczystości.'),
         ('przyjecia/#firmy', 'sala-okragle', 'Spotkania firmowe', 'Bankiety, wigilie firmowe, szkolenia i integracje – z fakturą, obsługą i menu ustalonym pod grupę.'),
         ('przyjecia/#konsolacja', 'kawa', 'Konsolacja', 'Spokojne miejsce na spotkanie po pogrzebie. Obiad, kawa, ciasto – ustalamy wszystko w jednej rozmowie.'),
         ('catering/', 'slodki-babeczki', 'Catering na wynos', 'Dania z tej samej kuchni co na weselach – od 5 do 100 osób. Menu 2026 z cenami i zamówieniem online.'),
     ]
     occ_html = ''.join(f'<a class="occ" href="{p}{u}"><figure>{pic(p, im, "", sizes="(max-width:860px) 80vw, 30vw")}</figure><h3>{h}</h3><p>{t}</p><span class="u">Zobacz</span></a>' for u, im, h, t in occ)
-    slides = [('dek-roze', 'Kwiaty za stołem Pary Młodej w sali Finezja'), ('sala-kwiaty', 'Wnętrze sali z żyrandolami i lustrzanym sufitem'),
-              ('dek-luk', 'Stół Pary Młodej pod złotym łukiem z kwiatami'), ('hero', 'Sala przygotowana na wesele – długie stoły i kwiaty')]
+    slides = [('dek-roze', 'Kwiaty za stołem Pary Młodej w sali Finezja'), ('sala-zyrandole', 'Wnętrze sali z żyrandolami i lustrzanym sufitem'),
+              ('dek-mlodzi', 'Stół Pary Młodej ze świecami'), ('slodki-stol', 'Słodki stół z ciastami z naszej kuchni')]
     sl = ''.join(pic(p, n, a, sizes='(max-width:860px) 100vw, 46vw', lazy=i > 0, high=i == 0, cls='on' if i == 0 else '') for i, (n, a) in enumerate(slides))
     ld = [{"@context": "https://schema.org", "@type": "Event", "name": "Bal Andrzejkowy 2026 w Finezji",
            "startDate": "2026-11-21T19:00:00+01:00", "endDate": "2026-11-22T04:00:00+01:00",
@@ -242,7 +242,7 @@ def home():
 
 <section class="pair"><div class="wrap">
 <div class="pair-row">
-<div class="pair-img"><figure class="arch tall" data-par="-0.06">{pic(p, 'sala-kwiaty', 'Wnętrze sali Finezja z kwiatami, żyrandolami i lustrzanym sufitem')}</figure>
+<div class="pair-img"><figure class="tall" data-par="-0.06">{pic(p, 'sala-kwiaty', 'Wnętrze sali Finezja z kwiatami, żyrandolami i lustrzanym sufitem')}</figure>
 <figure class="pair-small" data-par="0.12">{pic(p, 'sala-zyrandole', 'Kryształowe żyrandole nad stołami', sizes='22vw')}</figure></div>
 <div class="pair-txt"><p class="kicker">Sala</p><h2>Jasne wnętrze, które dopasujemy do Waszego przyjęcia</h2>
 <p>Wysokie okna, kryształowe żyrandole, lustrzany sufit z oświetleniem LED i białe pokrowce na krzesłach. Wnętrze jest spokojnym tłem – tak samo dobrze wygląda wesele w stylu glamour, boho, jak i elegancka komunia.</p>
@@ -251,7 +251,7 @@ def home():
 </div>
 <div class="pair-row flip">
 <div class="pair-img"><figure class="tall" data-par="-0.05">{pic(p, 'slodki-stol', 'Słodki stół z ciastami i deserami z kuchni Finezji')}</figure>
-<figure class="pair-small arch" data-par="0.1">{pic(p, 'slodki-babeczki', 'Babeczki i desery z naszej kuchni', sizes='22vw')}</figure></div>
+<figure class="pair-small" data-par="0.1">{pic(p, 'slodki-babeczki', 'Babeczki i desery z naszej kuchni', sizes='22vw')}</figure></div>
 <div class="pair-txt"><p class="kicker">Kuchnia</p><h2>Gotujemy na miejscu, nie wozimy cateringu z zewnątrz</h2>
 <p>Każde danie powstaje w naszej kuchni – ze świeżych, w większości lokalnych składników. Torty na śmietanie i lodowe, ciasta domowe i monoporcje na słodki stół też robimy sami, więc tort nie jedzie w upale.</p>
 <p>Menu układamy razem z Wami: klasyka kuchni polskiej dla rodziców i dziadków obok nowocześniejszych dań dla młodszych gości. Dania wegetariańskie, wegańskie, bezglutenowe i bez laktozy przygotowujemy jako pełnowartościowe posiłki.</p>
