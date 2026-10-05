@@ -45,8 +45,22 @@ def big(p, name):
     return p + 'img/' + variants(name)[-1][1]
 
 # ---------- wspólne ----------
-NAV = [('wesele/', 'Wesele'), ('przyjecia/', 'Przyjęcia'), ('catering/', 'Catering'),
-       ('bal-andrzejkowy/', 'Bal Andrzejkowy'), ('galeria/', 'Galeria'), ('kontakt/', 'Kontakt')]
+NAV = [('wesele/', 'Wesele'), ('oferta/', 'Oferta'), ('catering-turek/', 'Catering'),
+       ('andrzejki/', 'Bale'), ('galeria/', 'Galeria'), ('blog/', 'Blog'), ('kontakt/', 'Kontakt')]
+SUB = {
+    'wesele/': [('wesele/', 'Wesele w Finezji'), ('polecamy/', 'Polecani wykonawcy'), ('sala-weselna-kalisz/', 'Sala weselna: Kalisz'),
+                ('sala-weselna-konin/', 'Sala weselna: Konin'), ('sala-bankietowa-kalisz/', 'Sala bankietowa: Kalisz')],
+    'oferta/': [('oferta/osiemnastka/', 'Osiemnastka'), ('oferta/urodziny/', 'Urodziny'), ('oferta/30-ste-urodziny/', '30. urodziny'),
+                ('oferta/czterdziestka/', 'Czterdziestka'), ('oferta/piedziesiatka/', 'Pięćdziesiątka'), ('oferta/szescdziesiatka/', 'Sześćdziesiątka'),
+                ('oferta/siedemdziesiatka/', 'Siedemdziesiątka'), ('oferta/chrzest/', 'Chrzest święty'), ('oferta/komunia-swieta/', 'Komunia święta'),
+                ('oferta/spotkania-firmowe/', 'Spotkania firmowe'), ('oferta/konsolacja/', 'Konsolacja')],
+    'catering-turek/': [('catering-turek/', 'Catering'), ('menu-cateringowe-2026/', 'Menu cateringowe 2026'), ('wigilia/', 'Catering wigilijny')],
+    'andrzejki/': [('andrzejki/', 'Bal Andrzejkowy 2026'), ('bal-noworoczny/', 'Bal Noworoczny'), ('karnawal/', 'Bal Karnawałowy')],
+}
+# stare adresy z dema v1 -> adresy jak na finezja.org
+REMAP = [('przyjecia/#osiemnastka', 'oferta/osiemnastka/'), ('przyjecia/#urodziny', 'oferta/urodziny/'), ('przyjecia/#komunia', 'oferta/komunia-swieta/'),
+         ('przyjecia/#firmy', 'oferta/spotkania-firmowe/'), ('przyjecia/#konsolacja', 'oferta/konsolacja/'), ('przyjecia/', 'oferta/'),
+         ('catering/#catering', 'menu-cateringowe-2026/#catering'), ('catering/', 'catering-turek/'), ('bal-andrzejkowy/', 'andrzejki/')]
 
 ORG = {
     "@type": ["EventVenue", "Restaurant"], "@id": BASE + "#finezja",
@@ -90,7 +104,7 @@ def head(p, path, title, desc, ld=None, preload=None, cls=''):
 <link rel="icon" href="{p}favicon.svg" type="image/svg+xml">
 <script>document.documentElement.classList.add('js');try{{if(!sessionStorage.getItem('fz_intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){{document.documentElement.classList.add('intro');sessionStorage.setItem('fz_intro','1')}}}}catch(e){{}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Mulish:wght@400;500;600&display=swap" rel="stylesheet">
 {pre}
 <link rel="stylesheet" href="{p}assets/styles.css">
 {ldh}
@@ -104,8 +118,18 @@ def logo(p, sub='sala weselna i bankietowa'):
     return f'<a class="brand" href="{p}" aria-label="Finezja – strona główna"><span class="brand-f" aria-hidden="true"><i></i><b>F</b><i></i></span><span class="brand-t"><b>Finezja</b><span>{sub}</span></span></a>'
 
 def header(p, cur, dark=True):
-    links = ''.join(f'<a href="{p}{u}"{" aria-current=page" if u == cur else ""}>{n}</a>' for u, n in NAV)
+    def on(u):
+        return u == cur or any(x == cur for x, _ in SUB.get(u, [])) or (u == 'oferta/' and str(cur).startswith('oferta/'))
+    links = ''
+    for u, n in NAV:
+        a = f'<a href="{p}{u}"{" aria-current=page" if on(u) else ""}>{n}</a>'
+        if u in SUB:
+            sub = ''.join(f'<a href="{p}{x}">{y}</a>' for x, y in SUB[u])
+            links += f'<div class="dd">{a}<div class="dd-panel"><div>{sub}</div></div></div>'
+        else:
+            links += a
     big = ''.join(f'<a href="{p}{u}" style="--i:{i}">{n}</a>' for i, (u, n) in enumerate([('', 'Strona główna')] + NAV))
+    big += '<div class="menu-sub" style="--i:8">' + ''.join(f'<a href="{p}{x}">{y}</a>' for x, y in SUB['oferta/'] + SUB['andrzejki/'][1:] + [('menu-cateringowe-2026/', 'Menu cateringowe 2026'), ('polecamy/', 'Polecamy')]) + '</div>'
     return f'''<header class="top{' on-dark' if dark else ''}"><div class="wrap">
 {logo(p)}
 <nav class="nav" aria-label="Menu główne">{links}</nav>
@@ -118,6 +142,13 @@ def header(p, cur, dark=True):
 </div></div>
 <main id="tresc">
 '''
+
+FOOT_OF = [('wesele/', 'Wesele'), ('oferta/osiemnastka/', 'Osiemnastka'), ('oferta/urodziny/', 'Urodziny i jubileusze'), ('oferta/chrzest/', 'Chrzest'),
+           ('oferta/komunia-swieta/', 'Komunia'), ('oferta/spotkania-firmowe/', 'Spotkania firmowe'), ('oferta/konsolacja/', 'Konsolacja'),
+           ('catering-turek/', 'Catering'), ('wigilia/', 'Catering wigilijny')]
+FOOT_FI = [('andrzejki/', 'Bal Andrzejkowy'), ('bal-noworoczny/', 'Bal Noworoczny'), ('karnawal/', 'Bal Karnawałowy'), ('galeria/', 'Galeria'),
+           ('polecamy/', 'Polecamy'), ('blog/', 'Blog'), ('sala-weselna-kalisz/', 'Sala weselna Kalisz'), ('sala-weselna-konin/', 'Sala weselna Konin'),
+           ('polityka-prywatnosci/', 'Polityka prywatności')]
 
 def footer(p):
     return f'''</main>
@@ -133,7 +164,8 @@ def footer(p):
 <li><a href="tel:{TEL1H}">{TEL1}</a></li><li><a href="tel:{TEL2H}">{TEL2}</a></li><li><a href="mailto:{MAIL}">{MAIL}</a></li>
 <li style="margin-top:12px"><a href="{FB}" target="_blank" rel="noopener">Facebook</a> · <a href="{IG}" target="_blank" rel="noopener">Instagram</a> · <a href="{YT}" target="_blank" rel="noopener">YouTube</a></li></ul></div>
 <div><h4>Biuro sali</h4><ul><li>Poniedziałek 10:00–13:00</li><li>Czwartek 9:00–13:00</li><li>Piątek–niedziela 9:00–21:00</li><li class="dim">Wizyty w sali – po umówieniu, także w weekend</li></ul></div>
-<div><h4>Oferta</h4><ul>{''.join(f'<li><a href="{p}{u}">{n}</a></li>' for u, n in NAV[:5])}<li><a href="{p}przyjecia/#konsolacja">Konsolacje</a></li></ul></div>
+<div><h4>Oferta</h4><ul>{''.join(f'<li><a href="{p}{u}">{n}</a></li>' for u, n in FOOT_OF)}</ul></div>
+<div><h4>Finezja</h4><ul>{''.join(f'<li><a href="{p}{u}">{n}</a></li>' for u, n in FOOT_FI)}</ul></div>
 </div>
 <div class="kpo"><img src="{p}img/kpo.webp" width="340" height="55" alt="Fundusze Europejskie, Rzeczpospolita Polska, Unia Europejska – NextGenerationEU" loading="lazy">
 <p>F.U. Finezja realizuje projekt dofinansowany ze środków Krajowego Planu Odbudowy, inwestycja A1.2.1 „Inwestycje dla przedsiębiorstw w produkty, usługi i kompetencje pracowników oraz kadry związane z dywersyfikacją działalności”. Przedsięwzięcie: „Dywersyfikacja usług FINEZJI poprzez zieloną transformację, zakup środków trwałych, cyfryzację oraz doradztwo i szkolenia w województwie wielkopolskim”. Kwota wsparcia: 485 235 zł.</p></div>
@@ -193,6 +225,8 @@ def reviews(sel):
 def write(path, html):
     fp = os.path.join(ROOT, path, 'index.html')
     os.makedirs(os.path.dirname(fp), exist_ok=True)
+    for a, b in REMAP:
+        html = re.sub(r'href="((?:\.\./)*)' + re.escape(a) + r'(?=[?#"])', lambda m: 'href="' + m.group(1) + b, html)
     hd, body = html.split('</head>', 1)
     body = re.sub(r'>([^<]+)<', lambda t: '>' + re.sub(r'(?<=[\s(])(w|z|i|o|u|a|do|na|od|po|za|we|ze|ok\.) ', lambda m: m.group(1) + '&nbsp;', t.group(1)) + '<', body)  # sierotki tylko w tekście
     html = hd + '</head>' + body
@@ -218,8 +252,8 @@ def home():
     ld = [{"@context": "https://schema.org", "@type": "Event", "name": "Bal Andrzejkowy 2026 w Finezji",
            "startDate": "2026-11-21T19:00:00+01:00", "endDate": "2026-11-22T04:00:00+01:00",
            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode", "eventStatus": "https://schema.org/EventScheduled",
-           "location": {"@id": BASE + "#finezja"}, "url": BASE + "bal-andrzejkowy/",
-           "offers": {"@type": "Offer", "price": "220", "priceCurrency": "PLN", "url": BASE + "bal-andrzejkowy/"}}]
+           "location": {"@id": BASE + "#finezja"}, "url": BASE + "andrzejki/",
+           "offers": {"@type": "Offer", "price": "220", "priceCurrency": "PLN", "url": BASE + "andrzejki/"}}]
     h = head(p, '', 'Finezja – sala weselna i bankietowa pod Turkiem | Kaczki Średnie',
              'Sala weselna i bankietowa dla 60–160 gości, 4 km od Turku. Od 2010 roku ponad 350 wesel. Własna kuchnia, noclegi, bezpłatny parking, catering.',
              ld=ld, preload='dek-roze')
@@ -452,8 +486,8 @@ def wesele():
 # =====================================================================
 #  PRZYJĘCIA
 # =====================================================================
-def przyjecia():
-    p = '../'
+def przyjecia(p='../'):
+    """Zwraca bloki sekcji (osiemnastka, urodziny, komunia, firmy, konsolacja, swieta) do podstron oferty."""
     q18 = [
         ('Ile kosztuje osiemnastka w Finezji?', 'Cena zależy od liczby gości, menu i atrakcji. Przygotowujemy indywidualną wycenę – po kontakcie ofertę dostaniesz w ciągu 24 godzin.'),
         ('Ile osób pomieści sala?', 'Komfortowo do 150 gości przy osiemnastce z parkietem. Organizujemy też mniejsze, kameralne przyjęcia.'),
@@ -508,7 +542,7 @@ def przyjecia():
 <p>Na poważnie i uroczyście albo z przymrużeniem oka – z wystawnym obiadem i tortem albo kolacją z tańcami. Kameralne przyjęcie w gronie najbliższych i większa uroczystość z rozmachem wyglądają u nas inaczej, bo każde ustawiamy od nowa.</p>
 <p>Doradzimy w kwestii menu, ustawienia sali i harmonogramu. Przy przyjęciach dla dzieci wydzielimy strefę do zabawy, przy sześćdziesiątce czy siedemdziesiątce – ustawimy stoły tak, żeby dało się swobodnie rozmawiać.</p>
 <p>Przy sprzyjającej pogodzie część przyjęcia może odbyć się na zewnątrz.</p>
-<div class="actions"><a class="btn ghost" href="../kontakt/?okazja=urodziny#zapytanie">Zapytaj o termin</a></div></div>
+<div class="actions"><a class="btn ghost" href="{p}kontakt/?okazja=urodziny#zapytanie">Zapytaj o termin</a></div></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
 <figure style="margin:0">{pic(p, 'urodziny-50', 'Dekoracja na 50. urodziny z podświetlaną cyfrą', sizes='25vw')}</figure>
 <figure style="margin:0">{pic(p, 'urodziny-pion', 'Dekoracja urodzinowa z balonami', sizes='25vw')}</figure></div>
@@ -521,7 +555,7 @@ def przyjecia():
 <p>Pierwsza Komunia i chrzest to dni, w których przy jednym stole siedzą dziadkowie, rodzice i najmłodsi. Przygotowujemy menu dla dorosłych i dla dzieci, układ stołów z miejscem do zabawy i dekoracje dopasowane do uroczystości – od białych kwiatów po podświetlane napisy.</p>
 <p>Do kościołów w Turku jest około 10 minut samochodem, a przed salą czeka bezpłatny parking.</p>
 <p class="muted small">Na komunie warto rezerwować salę z dużym wyprzedzeniem – majowe niedziele znikają pierwsze.</p>
-<div class="actions"><a class="btn ghost" href="../kontakt/?okazja=komunia#zapytanie">Zapytaj o termin komunii</a><a class="btn ghost" href="../kontakt/?okazja=chrzciny#zapytanie">Chrzciny</a></div></div>
+<div class="actions"><a class="btn ghost" href="{p}kontakt/?okazja=komunia#zapytanie">Zapytaj o termin komunii</a><a class="btn ghost" href="{p}kontakt/?okazja=chrzciny#zapytanie">Chrzciny</a></div></div>
 </div></div></section>
 
 <section id="firmy" class="sand" style="scroll-margin-top:80px"><div class="wrap">
@@ -529,7 +563,7 @@ def przyjecia():
 <div><p class="kicker">Dla firm</p><h2>Bankiety, wigilie firmowe, szkolenia</h2>
 <p>Kolacje biznesowe, jubileusze firm, integracje, wigilie pracownicze i szkolenia. Sala z nagłośnieniem, rzutnikiem i klimatyzacją, parking dla wszystkich uczestników, obsługa kelnerska i faktura.</p>
 <p>Menu ustalamy pod grupę, z uwzględnieniem diet i alergii. Na Andrzejki możemy przygotować zamknięty bal tylko dla Waszej firmy w innym listopadowym terminie.</p>
-<div class="actions"><a class="btn ghost" href="../kontakt/?okazja=firma#zapytanie">Zapytaj o ofertę dla firmy</a></div></div>
+<div class="actions"><a class="btn ghost" href="{p}kontakt/?okazja=firma#zapytanie">Zapytaj o ofertę dla firmy</a></div></div>
 <figure>{pic(p, 'sala-okragle', 'Sala z okrągłymi stołami ustawiona na przyjęcie')}</figure>
 </div></div></section>
 
@@ -540,18 +574,15 @@ def przyjecia():
 <div class="actions"><a class="btn" href="tel:{TEL1H}">Zadzwoń: {TEL1}</a><a class="btn ghost" href="tel:{TEL2H}">{TEL2}</a></div>
 </div></section>
 
-<section class="white"><div class="wrap two">
+<section id="swieta" class="white"><div class="wrap two">
 <div><p class="kicker">Święta</p><h2>Wielkanoc i Wigilia bez gotowania</h2>
 <p>Świąteczny obiad w sali w gronie rodziny albo tradycyjne potrawy na wynos – pierogi z kapustą i grzybami, barszcz czerwony z uszkami, smażony karp, kompot z suszu. Catering wigilijny odbierasz 23 grudnia w godzinach 13:00–16:00.</p>
 <p class="muted">Świąteczne terminy rozchodzą się szybko – zamówienia warto składać z kilkutygodniowym wyprzedzeniem.</p>
-<div class="actions"><a class="btn ghost" href="../catering/">Catering Finezji</a></div></div>
+<div class="actions"><a class="btn ghost" href="{p}catering/">Catering Finezji</a></div></div>
 <figure style="margin:0">{pic(p, 'kawa', 'Stół z kawą, herbatą i ciastami w sali Finezja')}</figure>
 </div></section>
 '''
-    h += reviews([3, 2, 0])
-    h += contact_band(p)
-    h += footer(p)
-    write('przyjecia', h)
+    return dict(re.findall(r'<section id="(\w+)"[^>]*>(.*?)</section>', h, re.S)), q18
 
 # =====================================================================
 #  CATERING – menu 2026 (z grafiki menu na finezja.org)
@@ -609,11 +640,11 @@ def catering():
         ('Na ile osób przygotujecie catering?', 'Od 5 do 100 osób. Przy większych przyjęciach pomożemy dobrać ilości do liczby gości.'),
         ('Czy uwzględniacie diety?', 'Tak – dania wegetariańskie i bez alergenów przygotujemy po wcześniejszym uzgodnieniu.'),
     ]
-    h = head(p, 'catering/', 'Catering Turek – menu 2026 z cenami, dowóz i odbiór | Finezja',
+    h = head(p, 'menu-cateringowe-2026/', 'Menu cateringowe 2026 – ceny i zamówienie online | Catering Finezja Turek',
              'Catering z kuchni sali Finezja pod Turkiem: zupy, mięsa, sałatki, przekąski, ciasta i torty. Menu 2026 z cenami, zamówienie online, dowóz do 5 km gratis od 300 zł.',
              ld=[faq_ld(cq)], preload='slodki-babeczki')
-    h += header(p, 'catering/')
-    h += phead(p, 'slodki-babeczki', 'Catering', 'Catering z kuchni Finezji', 'Te same dania, które podajemy na weselach – na urodziny w domu, spotkanie firmowe albo rodzinny obiad. Od 5 do 100 osób, z dowozem lub odbiorem w sali.',
+    h += header(p, 'menu-cateringowe-2026/')
+    h += phead(p, 'slodki-babeczki', '<a href="../catering-turek/">Catering</a><span>/</span>Menu 2026', 'Menu cateringowe 2026', 'Te same dania, które podajemy na weselach – na urodziny w domu, spotkanie firmowe albo rodzinny obiad. Od 5 do 100 osób, z dowozem lub odbiorem w sali.',
                kicker='Turek i okolice · menu 2026',
                actions='<div class="actions"><a class="btn light" href="#catering">Złóż zamówienie</a><a class="btn line-light" href="tel:' + TEL1H + '">Zamów telefonicznie</a></div>')
     h += f'''<section class="tight white"><div class="wrap">
@@ -649,7 +680,7 @@ def catering():
 '''
     h += reviews([4, 5, 2])
     h += footer(p)
-    write('catering', h)
+    write('menu-cateringowe-2026', h)
 
 # =====================================================================
 #  BAL ANDRZEJKOWY
@@ -669,11 +700,11 @@ def bal():
           "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode", "eventStatus": "https://schema.org/EventScheduled",
           "location": {"@id": BASE + "#finezja"}, "image": BASE + "img/og.jpg",
           "description": "Bal andrzejkowy w sali Finezja pod Turkiem: kolacja serwowana, bufet, DJ-konferansjer, zabawa do 4:00.",
-          "offers": {"@type": "Offer", "price": "220", "priceCurrency": "PLN", "availability": "https://schema.org/InStock", "url": BASE + "bal-andrzejkowy/"}}]
-    h = head(p, 'bal-andrzejkowy/', 'Bal Andrzejkowy 2026 w Turku – 21 listopada, Sala Finezja',
+          "offers": {"@type": "Offer", "price": "220", "priceCurrency": "PLN", "availability": "https://schema.org/InStock", "url": BASE + "andrzejki/"}}]
+    h = head(p, 'andrzejki/', 'Bal Andrzejkowy 2026 w Turku – 21 listopada, Sala Finezja',
              'Bal Andrzejkowy 21 listopada 2026 w Sali Finezja pod Turkiem: kolacja, bufet przez całą noc, DJ-konferansjer, zabawa do 4:00. Bilety od 220 zł/os.',
              ld=ld, preload='bal-sala')
-    h += header(p, 'bal-andrzejkowy/')
+    h += header(p, 'andrzejki/')
     h += phead(p, 'bal-sala', 'Bal Andrzejkowy', 'Bal Andrzejkowy 2026', 'Ostatnia wielka zabawa przed świętami. Elegancka kolacja, DJ, który zna parkiet, i sala, w której bawi się do 150 osób. Z Turku, Konina, Koła, Dobrej i Władysławowa przyjeżdża się tu na jedną noc, żeby zapomnieć o kalendarzu.',
                kicker='Sobota, 21 listopada 2026 · <span data-countdown="2026-11-21"></span>',
                actions=f'<div class="actions"><a class="btn light" href="tel:{TEL1H}">Rezerwuj: {TEL1}</a><a class="btn line-light" href="#rezerwacja">Jak zarezerwować</a></div>')
@@ -731,7 +762,7 @@ def bal():
 </div></section>
 '''
     h += footer(p)
-    write('bal-andrzejkowy', h)
+    write('andrzejki', h)
 
 # =====================================================================
 #  GALERIA
@@ -825,11 +856,12 @@ def kontakt():
     write('kontakt', h)
 
 # ---------- pliki pomocnicze ----------
+URLS = []
 def extras():
     open(os.path.join(ROOT, 'favicon.svg'), 'w', encoding='utf-8').write(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3d1620"/>'
         '<text x="32" y="46" text-anchor="middle" font-family="Georgia,serif" font-size="42" fill="#f5efe6">F</text></svg>')
-    urls = ['', 'wesele/', 'przyjecia/', 'catering/', 'bal-andrzejkowy/', 'galeria/', 'kontakt/']
+    urls = URLS
     open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8').write(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
         + ''.join(f'<url><loc>{BASE}{u}</loc></url>' for u in urls) + '</urlset>\n')
@@ -837,5 +869,13 @@ def extras():
     open(os.path.join(ROOT, '.nojekyll'), 'w').write('')
 
 if __name__ == '__main__':
-    home(); wesele(); przyjecia(); catering(); bal(); galeria(); kontakt(); extras()
+    import sys, shutil
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    for old in ('przyjecia', 'catering', 'bal-andrzejkowy'):
+        if os.path.isdir(os.path.join(ROOT, old)): shutil.rmtree(os.path.join(ROOT, old))
+    home(); wesele(); catering(); bal(); galeria(); kontakt()
+    import podstrony
+    URLS[:] = podstrony.run()
+    extras()
+    print(len(URLS), 'adresów')
     print('ok')

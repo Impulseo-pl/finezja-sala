@@ -40,8 +40,8 @@
 
   /* odsłanianie przy przewijaniu */
   var sel='main section:not(.hero):not(.phead) figure, main .strip';
-  $$(sel).forEach(function(f){if(f.closest('.hs-track')||f.closest('[data-revs]')||f.closest('.vx'))return;f.classList.add('rv-img')});
-  var txt='main section:not(.hero):not(.phead) .kicker, main section:not(.hero):not(.phead) p:not(.lede), main .spec, main .list, main .steps li, main .faq, main .actions, main .calc, main .cart, main .occ, main .three>div, main .cdl, main .bal-dl, main .hint, main .form, main .masonry a';
+  $$(sel).forEach(function(f){if(f.closest('.hs-track')||f.closest('[data-revs]')||f.closest('.vx')||f.closest('.idx'))return;f.classList.add('rv-img')});
+  var txt='main section:not(.hero):not(.phead) .kicker, main section:not(.hero):not(.phead) p:not(.lede), main .spec, main .list, main .steps li, main .faq, main .actions, main .calc, main .cart, main .occ, main .three>div, main .cdl, main .bal-dl, main .hint, main .form, main .masonry a, main .idx-row, main .post-card, main .feats>div, main .pgrp, main .rel-links a, main .dots li';
   $$(txt).forEach(function(el){if(el.closest('[data-revs]')||el.closest('.rv-img')||el.closest('.vx'))return;el.classList.add('rv')});
   $$('.steps, .three, .hs-track').forEach(function(g){$$(':scope > *',g).forEach(function(c,i){c.style.setProperty('--rd',(i%3)*0.12+'s')})});
   if('IntersectionObserver' in window&&!RM){
@@ -105,6 +105,17 @@
     new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){vid.preload='auto';var pr=vid.play();if(pr&&pr.catch)pr.catch(function(){})}else vid.pause()})},{threshold:.15}).observe(vid);
   }
 
+  /* spis okazji – podgląd zdjęcia płynie za kursorem */
+  if(matchMedia('(hover:hover) and (min-width:861px)').matches){
+    $$('.idx-row').forEach(function(row){
+      var f=$('.idx-img',row),x=0,y=0,tx=0,ty=0,raf=0;
+      function loop(){x+=(tx-x)*.18;y+=(ty-y)*.18;f.style.left=x+'px';f.style.top=y+'px';if(Math.abs(tx-x)>.5||Math.abs(ty-y)>.5)raf=requestAnimationFrame(loop);else raf=0}
+      row.addEventListener('mouseenter',function(e){x=tx=e.clientX+180;y=ty=e.clientY;f.style.left=x+'px';f.style.top=y+'px';row.classList.add('hov')});
+      row.addEventListener('mousemove',function(e){tx=e.clientX+180;ty=e.clientY;if(!raf)raf=requestAnimationFrame(loop)});
+      row.addEventListener('mouseleave',function(){row.classList.remove('hov')});
+    });
+  }
+
   /* menu */
   var bg=$('.burger'),menu=$('#menu');
   function setMenu(o){d.body.classList.toggle('menu-open',o);bg.setAttribute('aria-expanded',o);menu.setAttribute('aria-hidden',!o);if(lenis){o?lenis.stop():lenis.start()}else d.body.style.overflow=o?'hidden':''}
@@ -166,7 +177,7 @@
     fl.addEventListener('click',function(e){
       var b=e.target.closest('button');if(!b)return;
       $$('button',fl).forEach(function(x){x.setAttribute('aria-pressed',x===b)});
-      var k=b.getAttribute('data-f'),items=$$('.masonry a');
+      var k=b.getAttribute('data-f'),items=$$('.masonry a, .posts [data-k]');
       items.forEach(function(a){a.classList.add('out')});
       setTimeout(function(){items.forEach(function(a){a.hidden=!(k==='all'||a.getAttribute('data-k')===k)});requestAnimationFrame(function(){items.forEach(function(a){if(!a.hidden){a.classList.remove('out');a.classList.add('in')}})});if(lenis)lenis.resize()},RM?0:320);
     });
